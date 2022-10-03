@@ -34,8 +34,9 @@ class PriceDataInvestiny():
             getLatestPriceSQLStatement = f'SELECT price FROM "Price" WHERE isin LIKE \'{isin}\' ORDER BY "priceDate" DESC LIMIT 1;'
             priceData = self.__sqlConnection.execute(getLatestPriceSQLStatement)
             fetchedPriceData = priceData.fetchall()
-            for price in fetchedPriceData:
-                return price[0] if price[0] is not None else 0
+            if len(fetchedPriceData) == 0:
+                return 0
+            return fetchedPriceData[0][0]
 
         return priceData
 
