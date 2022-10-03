@@ -1,4 +1,5 @@
 class Transaction:
+    """This class is used as a data class for the TransactionHelper Class"""
     def __init__(self, isin, wkn, amountOfBonds, transactionDate, typeOfTransaction, transactionComment, price, depot, curreny, exchange):
         self.isin = isin
         self.wkn = wkn
