@@ -1,3 +1,6 @@
+from datetime import date, datetime
+
+
 class BondIndicators:
 
     def __init__(self, sqlConnection):
@@ -5,6 +8,43 @@ class BondIndicators:
 
     def getDepotDataframe(self):
         pass
+
+    def getActiveIsins(self, date: date="CURRENT_DATE") -> list[str]:
+        """This function returns the isins of all active bond positions at the given date"""
+
+        if date != "CURRENT_DATE":
+            date = f"'{date}'"
+
+        getAllActiveIsinsSqlStatement = f"""WITH BuySum AS (
+                                            SELECT isin, SUM(amountofbonds) AS BuySum
+                                            FROM transaction
+                                            WHERE LOWER(typeoftransaction) LIKE 'buy'
+                                            AND transactiondate <= {date}
+                                            GROUP BY isin
+                                        ),
+
+                                            SellSum AS (
+                                                SELECT isin, SUM(amountofbonds) AS SaleSum
+                                                FROM transaction
+                                                WHERE LOWER(typeoftransaction) LIKE 'sell'
+                                                AND transactiondate <= {date}
+                                                GROUP BY isin
+                                            ),
+
+                                            CoalesceNullValues AS (
+                                            SELECT BuySum.isin, BuySum, CASE WHEN SaleSum is null THEN 0 ELSE SaleSum END AS SellSum
+                                            FROM BuySum LEFT JOIN SellSum ON BuySum.isin = SellSum.isin
+
+                                            )
+                                            SELECT isin
+                                            FROM CoalesceNullValues
+                                            WHERE isin is not null
+                                            AND (buysum - sellsum) > 0
+                                            GROUP BY isin;"""
+
+        activeIsinResult = self.__sqlConnection.execute(getAllActiveIsinsSqlStatement)
+        fetchedActiveIsins = list(map(lambda isinTuple: isinTuple[0],activeIsinResult.fetchall()))
+        return fetchedActiveIsins
 
     def calculateProfitOrLossForASale(self, transactionId: int):
         # Get all buys until the date of the transaction
@@ -100,4 +140,4 @@ connection = engine.connect()
 
 bondIndicators = BondIndicators(connection)
 
-bondIndicators.calculateProfitOrLossForASale(62)
+bondIndicators.getActiveIsins(date(year=2022, day=3, month=7))
