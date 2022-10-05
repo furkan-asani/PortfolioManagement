@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from investiny import historical_data
+from investiny import historical_data, search_assets
 from dateutil.relativedelta import relativedelta
 import pandas as pd
 import sqlalchemy
@@ -10,7 +10,7 @@ class PriceDataInvestiny():
     def __init__(self, sqlConnection):
         self.__sqlConnection = sqlConnection
 
-    def getPriceByIsin(self, isin: str, date: datetime= datetime.today()) -> float:
+    def getPriceByIsinViaInvestingIdCSV(self, isin: str, date: datetime= datetime.today()) -> float:
         
         # Create a date which is the supplied date minus one
         # Convert the date into a string 'm/d/y'
@@ -19,11 +19,7 @@ class PriceDataInvestiny():
         # return the price
         # if historical data doesnt find anything try the database
 
-        fromDate = date - relativedelta(date, days=1)
-
-        dateTimeFormat = "%m/%d/%Y"
-        date = date.strftime(dateTimeFormat)
-        fromDate = fromDate.strftime(dateTimeFormat)
+        date, fromDate = self.__convertDatetimesToDateStringsForInvestPy(date)
 
         try:
             investingId = self.__getInvestingId(isin)
@@ -40,6 +36,15 @@ class PriceDataInvestiny():
 
         return priceData
 
+    def __convertDatetimesToDateStringsForInvestPy(self, date):
+
+        fromDate = date - relativedelta(date, days=1)
+        dateTimeFormat = "%m/%d/%Y"
+        date = date.strftime(dateTimeFormat)
+        fromDate = fromDate.strftime(dateTimeFormat)
+
+        return date,fromDate
+
     def __getInvestingId(self, isin: str) -> int:
         investingIDsDataFrame = pd.read_csv(filepath_or_buffer='/home/PortfolioManagement/Resources/InvestingIDs.csv')
 
@@ -48,6 +53,14 @@ class PriceDataInvestiny():
 
         return id
 
+    def getPriceByIsinViaSearchAssets(self, isin: str, date: datetime=datetime.today()) -> float:
+        
+        date, fromDate = self.__convertDatetimesToDateStringsForInvestPy(date)
+        
+        try:
+            search_assets(query=isin, )
+
+        pass
 
 connectionString = "postgresql+psycopg2://root:password@postgres_db:5432/portfolio"
 engine = sqlalchemy.create_engine(connectionString)
@@ -55,4 +68,4 @@ connection = engine.connect()
 
 example = PriceDataInvestiny(connection)
 
-example.getPriceByIsin("IE0005042456")
+example.getPriceByIsinViaInvestingIdCSV("IE0005042456")
