@@ -3,13 +3,20 @@ from datetime import date, datetime
 
 class BondIndicators:
 
-    def __init__(self, sqlConnection):
+    def __init__(self, sqlConnection, priceService: PriceData):
         self.__sqlConnection = sqlConnection
+        self.priceService = priceService
 
-    def getDepotDataframe(self):
+    def getProfitOrLossDataFrame(self, date: date=date.today()):
+        
+        profitOrLossDataFrame = []
+
+        for isin in self.__getActiveIsins(date):
+            pass
+
         pass
 
-    def getActiveIsins(self, date: date="CURRENT_DATE") -> list[str]:
+    def __getActiveIsins(self, date: date="CURRENT_DATE") -> list[str]:
         """This function returns the isins of all active bond positions at the given date"""
 
         if date != "CURRENT_DATE":
@@ -45,6 +52,19 @@ class BondIndicators:
         activeIsinResult = self.__sqlConnection.execute(getAllActiveIsinsSqlStatement)
         fetchedActiveIsins = list(map(lambda isinTuple: isinTuple[0],activeIsinResult.fetchall()))
         return fetchedActiveIsins
+
+    def getProfitOrLossForAPosition(self, isin: str, date: date=date.today())-> float:
+        
+        # Berechne die zu diesem Zeitunkt valide Anzahl an Wertpapieren, die sich im Besitz befunden haben
+        # Daraus ergibt sich die totalSumOfPurchase und die valueOfPosition
+
+        totalSumOfPurchases = 0
+
+        for purchase in self.__getAllPurchases(date, isin):
+            totalSumOfPurchases += purchase.amount * purchase.price
+
+        valueOfPosition = self.priceService.getPriceByIsin(isin)
+        pass
 
     def calculateProfitOrLossForASale(self, transactionId: int):
         # Get all buys until the date of the transaction
@@ -108,8 +128,8 @@ class BondIndicators:
 
         return allSalesList
 
-    def __getAllPurchases(self, transactionDate, isin):
-        getAllPurchasesSqlStatement = f"Select * from transaction where isin LIKE '{isin}' AND typeoftransaction LIKE 'buy' AND transactiondate <= '{transactionDate}'"
+    def __getAllPurchases(self, transactionDate, isin)-> list:
+        getAllPurchasesSqlStatement = f"Select * from transaction where isin LIKE '{isin}' AND LOWER(typeoftransaction) LIKE 'buy' AND transactiondate <= '{transactionDate}'"
 
         allPurchases = self.__sqlConnection.execute(getAllPurchasesSqlStatement)
 
@@ -138,6 +158,10 @@ connectionString = "postgresql+psycopg2://root:password@postgres_db:5432/portfol
 engine = sqlalchemy.create_engine(connectionString)
 connection = engine.connect()
 
-bondIndicators = BondIndicators(connection)
+import PriceData.PriceDataInvestiny
 
-bondIndicators.getActiveIsins(date(year=2022, day=3, month=7))
+priceService = PriceData.PriceDataInvestiny.PriceDataInvestiny(connection)
+
+bondIndicators = BondIndicators(connection, priceService)
+
+bondIndicators.getProfitOrLossForAPosition("US0846707026")

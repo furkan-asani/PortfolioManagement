@@ -30,7 +30,7 @@ class PriceDataInvestiny():
 
         return priceData
 
-    def __convertDatetimesToDateStringsForInvestPy(self, date):
+    def __convertDatetimesToDateStringsForInvestPy(self, date: datetime) -> str:
 
         fromDate = date - relativedelta(date, days=1)
         dateTimeFormat = "%m/%d/%Y"
@@ -47,7 +47,7 @@ class PriceDataInvestiny():
 
         return id
 
-    def __getPriceFromDatabase(self, isin) -> float:
+    def __getPriceFromDatabase(self, isin: str) -> float:
         getLatestPriceSQLStatement = f'SELECT price FROM "Price" WHERE isin LIKE \'{isin}\' ORDER BY "priceDate" DESC LIMIT 1;'
         priceData = self.__sqlConnection.execute(getLatestPriceSQLStatement)
         fetchedPriceData = priceData.fetchall()
@@ -68,7 +68,7 @@ class PriceDataInvestiny():
         
         return priceData
 
-    def __getInvestingIdBySearchAssetsApi(self, isin):
+    def __getInvestingIdBySearchAssetsApi(self, isin: str) -> int:
 
         allowedExchanges = ["Frankfurt", "Xetra", "Vienna"]
         returnedResults = search_assets(query=isin)
