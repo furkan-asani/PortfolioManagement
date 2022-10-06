@@ -12,7 +12,7 @@ class BondIndicators:
         self.__sqlConnection = sqlConnection
         self.priceService = priceService
 
-    def getProfitOrLossDataFrame(self, date: date=date.today()):
+    def getProfitOrLossDataFrame(self, date: date=date.today())-> pd.DataFrame:
         
         profitOrLossDataFrame = []
 
@@ -25,6 +25,16 @@ class BondIndicators:
                 profitOrLossDataFrame.append({"isin": isin, "P/L": profitOrLoss, "date": date.strftime("%d/%m/%Y")})
         
         return pd.DataFrame(profitOrLossDataFrame)
+
+    def getDepotDataFrame(self, date: datetime= date.today(), depot: str='\%\%')-> pd.DataFrame:
+        
+        depotDataFrame = []
+        
+        for isin in self.__getActiveIsins(date):
+            profitOrLossData = self.__getProfitOrLossData(isin, date)
+            depotDataFrame.append({"isin": isin, "amountOfBonds": profitOrLossData["totalAmountOfBondsForThisPosition"], "valueOfThisPosition": profitOrLossData["valueOfPosition"]})
+
+        return pd.DataFrame(depotDataFrame)
 
     def __getActiveIsins(self, date: date="CURRENT_DATE") -> list[str]:
         """This function returns the isins of all active bond positions at the given date"""
@@ -65,6 +75,12 @@ class BondIndicators:
 
     def getProfitOrLossForAPosition(self, isin: str, date: date=date.today())-> float:
 
+        profitOrLossData = self.__getProfitOrLossData(isin, date)
+
+        return profitOrLossData["valueOfPosition"]  - profitOrLossData["totalSumOfPurchases"] 
+
+    def __getProfitOrLossData(self, isin, date):
+        """This method returns the necessary data in order to calculate the profit or loss of a position/transaction ..."""
         totalSumOfPurchases = 0
         totalAmountOfBondsForThisPosition = 0
 
@@ -77,8 +93,7 @@ class BondIndicators:
             totalAmountOfBondsForThisPosition += purchase.amount
 
         valueOfPosition = self.priceService.getPriceByIsin(isin) * totalAmountOfBondsForThisPosition
-
-        return valueOfPosition - totalSumOfPurchases
+        return {"totalSumOfPurchases":totalSumOfPurchases,"valueOfPosition": valueOfPosition, "totalAmountOfBondsForThisPosition":totalAmountOfBondsForThisPosition}
 
     def calculateProfitOrLossForASale(self, transactionId: int):
         # Get all buys until the date of the transaction
@@ -186,4 +201,6 @@ priceService = PriceDataInvestiny(connection)
 
 bondIndicators = BondIndicators(connection, priceService)
 
-print(bondIndicators.getProfitOrLossDataFrame())
+#print(bondIndicators.getProfitOrLossDataFrame())
+
+print(bondIndicators.getDepotDataFrame())
