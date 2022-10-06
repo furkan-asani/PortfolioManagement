@@ -26,27 +26,31 @@ class BondIndicators:
         
         return pd.DataFrame(profitOrLossDataFrame)
 
-    def getDepotDataFrame(self, date: datetime= date.today(), depot: str='\%\%')-> pd.DataFrame:
-        
+    def getDepotDataFrame(self, date: datetime= date.today(), depot: str='%%')-> pd.DataFrame:
+        # TODO use the depot to filter which bonds to show
         depotDataFrame = []
         
-        for isin in self.__getActiveIsins(date):
+        for isin in self.__getActiveIsins(date, 'dkb'):
             profitOrLossData = self.__getProfitOrLossData(isin, date)
             depotDataFrame.append({"isin": isin, "amountOfBonds": profitOrLossData["totalAmountOfBondsForThisPosition"], "valueOfThisPosition": profitOrLossData["valueOfPosition"]})
 
         return pd.DataFrame(depotDataFrame)
 
-    def __getActiveIsins(self, date: date="CURRENT_DATE") -> list[str]:
+    def __getActiveIsins(self, date: date="CURRENT_DATE", depot: str= "'%%'") -> list[str]:
         """This function returns the isins of all active bond positions at the given date"""
 
         if date != "CURRENT_DATE":
             date = f"'{date}'"
+
+        if depot != "'%%'":
+            depot = f"'{depot}'"
 
         getAllActiveIsinsSqlStatement = f"""WITH BuySum AS (
                                             SELECT isin, SUM(amountofbonds) AS BuySum
                                             FROM transaction
                                             WHERE LOWER(typeoftransaction) LIKE 'buy'
                                             AND transactiondate <= {date}
+                                            AND LOWER(depot) LIKE {depot}
                                             GROUP BY isin
                                         ),
 
@@ -55,6 +59,7 @@ class BondIndicators:
                                                 FROM transaction
                                                 WHERE LOWER(typeoftransaction) LIKE 'sell'
                                                 AND transactiondate <= {date}
+                                                AND LOWER(depot) LIKE {depot}
                                                 GROUP BY isin
                                             ),
 
@@ -203,4 +208,4 @@ bondIndicators = BondIndicators(connection, priceService)
 
 #print(bondIndicators.getProfitOrLossDataFrame())
 
-print(bondIndicators.getDepotDataFrame())
+#print(bondIndicators.getDepotDataFrame())
