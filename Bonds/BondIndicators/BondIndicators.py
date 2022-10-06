@@ -1,9 +1,12 @@
+__package__ = None
 from datetime import date, datetime
+
+from PriceDataInvestiny import PriceDataInvestiny
 
 
 class BondIndicators:
 
-    def __init__(self, sqlConnection, priceService: PriceData):
+    def __init__(self, sqlConnection, priceService):
         self.__sqlConnection = sqlConnection
         self.priceService = priceService
 
@@ -54,17 +57,21 @@ class BondIndicators:
         return fetchedActiveIsins
 
     def getProfitOrLossForAPosition(self, isin: str, date: date=date.today())-> float:
-        
-        # Berechne die zu diesem Zeitunkt valide Anzahl an Wertpapieren, die sich im Besitz befunden haben
-        # Daraus ergibt sich die totalSumOfPurchase und die valueOfPosition
 
         totalSumOfPurchases = 0
+        totalAmountOfBondsForThisPosition = 0
 
-        for purchase in self.__getAllPurchases(date, isin):
+        allPurchases = self.__getAllPurchases(date, isin)
+
+        allSales = self.__getAllSalesList(date, isin, True)
+
+        for purchase in self.__getListOfPurchasesWhichAreHeld(allPurchases, allSales):
             totalSumOfPurchases += purchase.amount * purchase.price
+            totalAmountOfBondsForThisPosition += purchase.amount
 
-        valueOfPosition = self.priceService.getPriceByIsin(isin)
-        pass
+        valueOfPosition = self.priceService.getPriceByIsin(isin) * totalAmountOfBondsForThisPosition
+
+        return valueOfPosition - totalSumOfPurchases
 
     def calculateProfitOrLossForASale(self, transactionId: int):
         # Get all buys until the date of the transaction
@@ -85,6 +92,21 @@ class BondIndicators:
 
         allSalesList = self.__getAllSalesList(transactionDate, isin)
 
+        allPurchasesList = self.__getListOfPurchasesWhichAreHeld(allPurchasesList, allSalesList)
+
+        totalProfit = 0
+
+        for purchase in allPurchasesList:
+            totalProfit += min(saleToCalculate.amount, purchase.amount) * (saleToCalculate.price - purchase.price)
+            saleToCalculateAmountCopy = saleToCalculate.amount
+            saleToCalculate.amount = max(saleToCalculate.amount - purchase.amount, 0)
+            purchase.amount = max(purchase.amount - saleToCalculateAmountCopy, 0)
+            if(saleToCalculate.amount == 0):
+                break
+
+        return totalProfit
+
+    def __getListOfPurchasesWhichAreHeld(self, allPurchasesList: list, allSalesList: list)-> list:
         for sale in allSalesList:
             for purchase in allPurchasesList:
                 if(purchase.amount == 0):
@@ -100,21 +122,16 @@ class BondIndicators:
         allPurchasesListIterator = filter(lambda purchase: (purchase.amount > 0), allPurchasesList)
 
         allPurchasesList = list(allPurchasesListIterator)
+        return allPurchasesList
 
-        totalProfit = 0
+    def __getAllSalesList(self, transactionDate, isin, inclusiveDate: bool=False):
 
-        for purchase in allPurchasesList:
-            totalProfit += min(saleToCalculate.amount, purchase.amount) * (saleToCalculate.price - purchase.price)
-            saleToCalculateAmountCopy = saleToCalculate.amount
-            saleToCalculate.amount = max(saleToCalculate.amount - purchase.amount, 0)
-            purchase.amount = max(purchase.amount - saleToCalculateAmountCopy, 0)
-            if(saleToCalculate.amount == 0):
-                break
+        operator = "<"
 
-        return totalProfit
+        if inclusiveDate:
+            operator = "<="
 
-    def __getAllSalesList(self, transactionDate, isin):
-        getAllSalesSqlStatement = f"Select * from transaction where isin LIKE '{isin}' AND typeoftransaction LIKE 'sell' AND transactiondate < '{transactionDate}'"
+        getAllSalesSqlStatement = f"Select * from transaction where isin LIKE '{isin}' AND typeoftransaction LIKE 'sell' AND transactiondate {operator} '{transactionDate}'"
 
         allSales = self.__sqlConnection.execute(getAllSalesSqlStatement)
 
@@ -158,10 +175,8 @@ connectionString = "postgresql+psycopg2://root:password@postgres_db:5432/portfol
 engine = sqlalchemy.create_engine(connectionString)
 connection = engine.connect()
 
-import PriceData.PriceDataInvestiny
-
-priceService = PriceData.PriceDataInvestiny.PriceDataInvestiny(connection)
+priceService = PriceDataInvestiny(connection)
 
 bondIndicators = BondIndicators(connection, priceService)
 
-bondIndicators.getProfitOrLossForAPosition("US0846707026")
+print(bondIndicators.getProfitOrLossForAPosition("12345678", date(day=1, month=10, year=2022)))
