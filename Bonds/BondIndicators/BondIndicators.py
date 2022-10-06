@@ -36,6 +36,10 @@ class BondIndicators:
 
         return pd.DataFrame(depotDataFrame)
 
+    def getPriceHistoryDataFrame(self, isin: str, dateFrom: date, dateTo: date=date.today()):
+        # TODO implement this function -> Basically call the api with the exact parameters and convert the response to a dataframe
+        pass
+
     def __getActiveIsins(self, date: date="CURRENT_DATE", depot: str= "'%%'") -> list[str]:
         """This function returns the isins of all active bond positions at the given date"""
 
