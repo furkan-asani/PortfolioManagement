@@ -27,10 +27,10 @@ class BondIndicators:
         return pd.DataFrame(profitOrLossDataFrame)
 
     def getDepotDataFrame(self, date: datetime= date.today(), depot: str='%%')-> pd.DataFrame:
-        # TODO use the depot to filter which bonds to show
+        
         depotDataFrame = []
         
-        for isin in self.__getActiveIsins(date, 'dkb'):
+        for isin in self.__getActiveIsins(date, depot):
             profitOrLossData = self.__getProfitOrLossData(isin, date)
             depotDataFrame.append({"isin": isin, "amountOfBonds": profitOrLossData["totalAmountOfBondsForThisPosition"], "valueOfThisPosition": profitOrLossData["valueOfPosition"]})
 
@@ -212,4 +212,4 @@ bondIndicators = BondIndicators(connection, priceService)
 
 #print(bondIndicators.getProfitOrLossDataFrame())
 
-#print(bondIndicators.getDepotDataFrame())
+print(bondIndicators.getDepotDataFrame(depot='dkb'))
