@@ -1,6 +1,8 @@
 __package__ = None
 from datetime import date, datetime
 
+import pandas as pd
+
 from PriceDataInvestiny import PriceDataInvestiny
 
 
@@ -15,9 +17,14 @@ class BondIndicators:
         profitOrLossDataFrame = []
 
         for isin in self.__getActiveIsins(date):
-            pass
-
-        pass
+            try:
+                profitOrLoss = self.getProfitOrLossForAPosition(isin, date)
+            except:
+                profitOrLoss = 0
+            finally:
+                profitOrLossDataFrame.append({"isin": isin, "P/L": profitOrLoss, "date": date.strftime("%d/%m/%Y")})
+        
+        return pd.DataFrame(profitOrLossDataFrame)
 
     def __getActiveIsins(self, date: date="CURRENT_DATE") -> list[str]:
         """This function returns the isins of all active bond positions at the given date"""
@@ -179,4 +186,4 @@ priceService = PriceDataInvestiny(connection)
 
 bondIndicators = BondIndicators(connection, priceService)
 
-print(bondIndicators.getProfitOrLossForAPosition("12345678", date(day=1, month=10, year=2022)))
+print(bondIndicators.getProfitOrLossDataFrame())
