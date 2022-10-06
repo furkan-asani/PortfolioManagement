@@ -37,7 +37,8 @@ class BondIndicators:
         return pd.DataFrame(depotDataFrame)
 
     def getPriceHistoryDataFrame(self, isin: str, dateFrom: date, dateTo: date=date.today()):
-        # TODO implement this function -> Basically call the api with the exact parameters and convert the response to a dataframe
+
+        return self.priceService.getPriceHistory(isin, dateFrom, dateTo)
         pass
 
     def __getActiveIsins(self, date: date="CURRENT_DATE", depot: str= "'%%'") -> list[str]:
@@ -212,4 +213,6 @@ bondIndicators = BondIndicators(connection, priceService)
 
 #print(bondIndicators.getProfitOrLossDataFrame())
 
-print(bondIndicators.getDepotDataFrame(depot='dkb'))
+#print(bondIndicators.getDepotDataFrame(depot='dkb'))
+
+#print(bondIndicators.getPriceHistoryDataFrame("IE0005042456", date(year=2022, month=8, day=1), date(year=2022, month=10, day=5)))
