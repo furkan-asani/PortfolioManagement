@@ -21,9 +21,9 @@ class PriceDataInvestiny():
         finally:
             return self.__getPriceFromDatabase(isin)
 
-    def getPriceHistory(self, isin: str, fromDate: date, toDate: date)-> list[float]:
+    def getPriceHistory(self, isin: str, fromDate: date, toDate: date)-> pd.DataFrame:
         
-        getPriceHistoryByDatabaseSqlStatement = f"""SELECT price, "priceDate"
+        getPriceHistoryByDatabaseSqlStatement = f"""SELECT "priceDate", price 
                                 FROM "Price"
                                 WHERE isin LIKE '{isin}'
                                 AND "priceDate" <= '{toDate}'

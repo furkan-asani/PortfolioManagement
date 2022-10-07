@@ -16,7 +16,7 @@ class BondIndicators:
         
         profitOrLossDataFrame = []
 
-        for isin in self.__getActiveIsins(date):
+        for isin in self.getActiveIsins(date):
             try:
                 profitOrLoss = self.getProfitOrLossForAPosition(isin, date)
             except:
@@ -30,7 +30,7 @@ class BondIndicators:
         
         depotDataFrame = []
         
-        for isin in self.__getActiveIsins(date, depot):
+        for isin in self.getActiveIsins(date, depot):
             profitOrLossData = self.__getProfitOrLossData(isin, date)
             depotDataFrame.append({"isin": isin, "amountOfBonds": profitOrLossData["totalAmountOfBondsForThisPosition"], "valueOfThisPosition": profitOrLossData["valueOfPosition"]})
 
@@ -41,7 +41,7 @@ class BondIndicators:
         return self.priceService.getPriceHistory(isin, dateFrom, dateTo)
         pass
 
-    def __getActiveIsins(self, date: date="CURRENT_DATE", depot: str= "'%%'") -> list[str]:
+    def getActiveIsins(self, date: date="CURRENT_DATE", depot: str= "'%%'") -> list[str]:
         """This function returns the isins of all active bond positions at the given date"""
 
         if date != "CURRENT_DATE":
