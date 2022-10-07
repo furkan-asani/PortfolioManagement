@@ -1,6 +1,8 @@
 __package__ = None
 from datetime import date, datetime
 
+import pandas as pd
+
 from PriceDataInvestiny import PriceDataInvestiny
 
 
@@ -10,26 +12,50 @@ class BondIndicators:
         self.__sqlConnection = sqlConnection
         self.priceService = priceService
 
-    def getProfitOrLossDataFrame(self, date: date=date.today()):
+    def getProfitOrLossDataFrame(self, date: date=date.today())-> pd.DataFrame:
         
         profitOrLossDataFrame = []
 
         for isin in self.__getActiveIsins(date):
-            pass
+            try:
+                profitOrLoss = self.getProfitOrLossForAPosition(isin, date)
+            except:
+                profitOrLoss = 0
+            finally:
+                profitOrLossDataFrame.append({"isin": isin, "P/L": profitOrLoss, "date": date.strftime("%d/%m/%Y")})
+        
+        return pd.DataFrame(profitOrLossDataFrame)
 
+    def getDepotDataFrame(self, date: datetime= date.today(), depot: str='%%')-> pd.DataFrame:
+        
+        depotDataFrame = []
+        
+        for isin in self.__getActiveIsins(date, depot):
+            profitOrLossData = self.__getProfitOrLossData(isin, date)
+            depotDataFrame.append({"isin": isin, "amountOfBonds": profitOrLossData["totalAmountOfBondsForThisPosition"], "valueOfThisPosition": profitOrLossData["valueOfPosition"]})
+
+        return pd.DataFrame(depotDataFrame)
+
+    def getPriceHistoryDataFrame(self, isin: str, dateFrom: date, dateTo: date=date.today()):
+
+        return self.priceService.getPriceHistory(isin, dateFrom, dateTo)
         pass
 
-    def __getActiveIsins(self, date: date="CURRENT_DATE") -> list[str]:
+    def __getActiveIsins(self, date: date="CURRENT_DATE", depot: str= "'%%'") -> list[str]:
         """This function returns the isins of all active bond positions at the given date"""
 
         if date != "CURRENT_DATE":
             date = f"'{date}'"
+
+        if depot != "'%%'":
+            depot = f"'{depot}'"
 
         getAllActiveIsinsSqlStatement = f"""WITH BuySum AS (
                                             SELECT isin, SUM(amountofbonds) AS BuySum
                                             FROM transaction
                                             WHERE LOWER(typeoftransaction) LIKE 'buy'
                                             AND transactiondate <= {date}
+                                            AND LOWER(depot) LIKE {depot}
                                             GROUP BY isin
                                         ),
 
@@ -38,6 +64,7 @@ class BondIndicators:
                                                 FROM transaction
                                                 WHERE LOWER(typeoftransaction) LIKE 'sell'
                                                 AND transactiondate <= {date}
+                                                AND LOWER(depot) LIKE {depot}
                                                 GROUP BY isin
                                             ),
 
@@ -58,6 +85,12 @@ class BondIndicators:
 
     def getProfitOrLossForAPosition(self, isin: str, date: date=date.today())-> float:
 
+        profitOrLossData = self.__getProfitOrLossData(isin, date)
+
+        return profitOrLossData["valueOfPosition"]  - profitOrLossData["totalSumOfPurchases"] 
+
+    def __getProfitOrLossData(self, isin, date):
+        """This method returns the necessary data in order to calculate the profit or loss of a position/transaction ..."""
         totalSumOfPurchases = 0
         totalAmountOfBondsForThisPosition = 0
 
@@ -70,8 +103,7 @@ class BondIndicators:
             totalAmountOfBondsForThisPosition += purchase.amount
 
         valueOfPosition = self.priceService.getPriceByIsin(isin) * totalAmountOfBondsForThisPosition
-
-        return valueOfPosition - totalSumOfPurchases
+        return {"totalSumOfPurchases":totalSumOfPurchases,"valueOfPosition": valueOfPosition, "totalAmountOfBondsForThisPosition":totalAmountOfBondsForThisPosition}
 
     def calculateProfitOrLossForASale(self, transactionId: int):
         # Get all buys until the date of the transaction
@@ -179,4 +211,8 @@ priceService = PriceDataInvestiny(connection)
 
 bondIndicators = BondIndicators(connection, priceService)
 
-print(bondIndicators.getProfitOrLossForAPosition("12345678", date(day=1, month=10, year=2022)))
+#print(bondIndicators.getProfitOrLossDataFrame())
+
+#print(bondIndicators.getDepotDataFrame(depot='dkb'))
+
+#print(bondIndicators.getPriceHistoryDataFrame("IE0005042456", date(year=2022, month=8, day=1), date(year=2022, month=10, day=5)))
