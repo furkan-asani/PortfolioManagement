@@ -14,7 +14,7 @@ class AssociatePDFs:
     def __init__(self, sqlConnection):
         self.__sqlConnection = sqlConnection
         self.__fileDropPath = "/home/PortfolioManagement/FileDrop"
-        self.__onlyFiles = onlyFiles = [
+        self.__onlyFiles = [
             f
             for f in os.listdir(self.__fileDropPath)
             if os.path.isfile(os.path.join(self.__fileDropPath, f))
