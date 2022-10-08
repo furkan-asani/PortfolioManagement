@@ -35,6 +35,15 @@ class TransactionHelper:
         """
         self.__sqlConnection.execute(insertSqlStatement)
 
+        getLatestTransactionIdSqlStatement = 'SELECT "transactionID" from transaction ORDER BY transactiondate DESC LIMIT 1'
+
+        latestTransactionIdResult = self.__sqlConnection.execute(getLatestTransactionIdSqlStatement)
+
+        fetchedLatestTransactionId = latestTransactionIdResult.fetchall()
+
+        return fetchedLatestTransactionId[0][0]
+
+
 
 import sqlalchemy
 connectionString = "postgresql+psycopg2://root:password@postgres_db:5432/portfolio"
@@ -43,6 +52,6 @@ connection = engine.connect()
 
 example = TransactionHelper(connection)
 
-transaction = Transaction('12345678','12345678', 10, date(year=2022, month=10, day=7), 'buy', 'Sample', 32.58, 'DKB', 'EUR', 'Xetra')
+transaction = Transaction('12345678','12345678', 1, date(year=2022, month=10, day=8), 'sell', 'Sample', 35.58, 'DKB', 'EUR', 'Xetra')
 
 example.insertIntoDatabase(transaction=transaction)
