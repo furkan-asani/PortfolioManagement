@@ -14,7 +14,7 @@ class AssociatePDFs:
         getBondIdSqlStatement = f'SELECT "BondID" FROM "Bond" WHERE isin = \'{fetchedTransactionResult[0]}\''
         bondIdResult = self.__sqlConnection.execute(getBondIdSqlStatement)
         fetchedBondId = bondIdResult.fetchall()[0][0]
-        insertPdfIntoDatabase
+        
         insertAssociationSqlStatement = f'INSERT INTO "AssociatedFiles" ( "FKBondId", fkpdfid, "FKTransactionID") VALUES ({fetchedBondId}, , {transactionId})'
         # use the date of the transaction in order to determine the folder in which the pdfs should be moved
         fileDropPath = "/home/PortfolioManagement/FileDrop"
@@ -29,7 +29,8 @@ class AssociatePDFs:
             id += 1
         pass
 
-
+    def insertPdfsIntoDatabase(self):
+        pass
 
 import sqlalchemy
 connectionString = "postgresql+psycopg2://root:password@postgres_db:5432/portfolio"
