@@ -60,8 +60,8 @@ class AssociatePDFs:
         if not os.path.exists(destinationPath):
             os.makedirs(destinationPath)
 
-    def __getBondId(self, fetchedTransactionResult):
-        getBondIdSqlStatement = f'SELECT "BondID" FROM "Bond" WHERE isin = \'{fetchedTransactionResult[0]}\''
+    def __getBondId(self, isin):
+        getBondIdSqlStatement = f'SELECT "BondID" FROM "Bond" WHERE isin = \'{isin[0]}\''
         bondIdResult = self.__sqlConnection.execute(getBondIdSqlStatement)
         fetchedBondId = bondIdResult.fetchall()[0][0]
         return fetchedBondId
