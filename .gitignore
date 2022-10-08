@@ -3,7 +3,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-/home/PortfolioManagement/FileDrop/*.*
 /home/PortfolioManagement/PDFs/*.*
 
 # C extensions
