@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from numpy import NaN
 import pandas as pd
 import Transactions
@@ -15,8 +15,8 @@ class ImportOnVista:
         df = pd.read_csv(filepath_or_buffer=self.__filePath, header=5,delimiter=";")
 
         for row in df.itertuples():
-            isValidRow = row[1] is NaN
-            if isValidRow:
+            isInvalidRow = row[1] is NaN
+            if isInvalidRow:
                 continue
             
             transaction = self.__insertIntoTransactionTable(row)
@@ -41,6 +41,46 @@ class ImportOnVista:
 
         self.__sqlConnection.execute(insertBondSQLStatement)
 
+class ImportDKB:
+    def __init__(self, sqlConnection, transactionHelper: Transactions.TransactionHelper):
+        self.__sqlConnection = sqlConnection
+        self.__transactionHelper = transactionHelper
+        self.__filePath = '/home/PortfolioManagement/Import/dkb.csv'
+
+    def readPositionsAndStoreInDatabase(self):
+        df = pd.read_csv(filepath_or_buffer= self.__filePath, header=5, delimiter=";")
+
+        for row in df.itertuples():
+            isInvalidValidRow = row[1] is NaN
+            if isInvalidValidRow:
+                continue
+
+            transaction = self.__insertIntoTransactionTable(row)
+
+            self.__insertIntoBondsTable(row, transaction)
+        pass
+
+    def __insertIntoTransactionTable(self, row):
+        
+        price = row[5]
+        if row[5] is not float:
+            price = float(row[5].replace(",", "."))
+        
+        amountOfBonds = row[1]
+        if amountOfBonds is not float:
+            amountOfBonds = float(row[1].replace(",", "."))
+
+        transaction = Transactions.Transaction(row[3], row[3], amountOfBonds, date.today(), 'buy', '', price, 'DKB', row[7], '')
+
+        self.__transactionHelper.insertIntoDatabase(transaction)
+
+        return transaction
+
+    def __insertIntoBondsTable(self, row, transaction: Transactions.Transaction):
+        insertBondSQLStatement = f'INSERT INTO "Bond" (isin, wkn, "Comment", "Name") VALUES (\'{transaction.isin}\', \'{transaction.wkn}\', \'\', \'{row[4]}\')'
+
+        self.__sqlConnection.execute(insertBondSQLStatement)
+
 import sqlalchemy
 
 connectionString = "postgresql+psycopg2://root:password@postgres_db:5432/portfolio"
@@ -49,6 +89,6 @@ connection = engine.connect()
 
 transactionHelper = Transactions.TransactionHelper(connection)
 
-example =ImportOnVista(connection, transactionHelper)
+example =ImportDKB(connection, transactionHelper)
 
 example.readPositionsAndStoreInDatabase()
