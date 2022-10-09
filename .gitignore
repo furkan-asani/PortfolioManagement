@@ -4,7 +4,7 @@ __pycache__/
 *$py.class
 
 /home/PortfolioManagement/PDFs/*.*
-/home/PortfolioManagement/Import/*
+/home/PortfolioManagement/Import/*.*
 # C extensions
 *.so
 
