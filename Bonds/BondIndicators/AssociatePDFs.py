@@ -40,7 +40,7 @@ class AssociatePDFs:
     def __iterateOverFileDropAndCreateAssociations(
         self, transactionId, typeOfPDFs, date, fetchedBondId, destinationPath
     ):
-        newPath = f"{destinationPath}/TransactionPDF_{id}.pdf"
+        newPath = f"{destinationPath}/TransactionPDF_"
 
         self.__iterateOverFileAndInsertIntoDatabase(
             date, transactionId, fetchedBondId, newPath, typeOfPDFs
