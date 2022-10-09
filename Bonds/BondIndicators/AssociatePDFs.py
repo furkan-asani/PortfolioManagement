@@ -38,21 +38,17 @@ class AssociatePDFs:
         )
 
     def __iterateOverFileDropAndCreateAssociations(
-        self, transactionId, typeOfPDFs, comment, date, fetchedBondId, destinationPath
+        self, transactionId, typeOfPDFs, date, fetchedBondId, destinationPath
     ):
-        id = 1
-        for file in self.__onlyFiles:
-            newPath = f"{destinationPath}/TransactionPDF_{id}.pdf"
-            os.rename(
-                os.path.join(self.__fileDropPath, file),
-                newPath,
-            )
-            pdfEntry = PDFEntry(date, typeOfPDFs, comment, newPath)
-            pdfId = self.__insertPDFIntoDatabase(pdfEntry)
-            self.__insertAssociationIntoDatabase(transactionId, fetchedBondId, pdfId)
-            id += 1
+        newPath = f"{destinationPath}/TransactionPDF_{id}.pdf"
 
-    def __insertAssociationIntoDatabase(self, transactionId, fetchedBondId, pdfId):
+        self.__iterateOverFileAndInsertIntoDatabase(
+            date, transactionId, fetchedBondId, newPath, typeOfPDFs
+        )
+
+    def __insertAssociationIntoDatabase(
+        self, transactionId: int, fetchedBondId: int, pdfId: int
+    ):
         insertAssociationSqlStatement = f'INSERT INTO "AssociatedFiles" ( "FKBondId", fkpdfid, "FKTransactionID") VALUES ({fetchedBondId}, {pdfId}, {transactionId})'
         self.__sqlConnection.execute(insertAssociationSqlStatement)
 
@@ -60,13 +56,15 @@ class AssociatePDFs:
         if not os.path.exists(destinationPath):
             os.makedirs(destinationPath)
 
-    def __getBondId(self, isin):
-        getBondIdSqlStatement = f'SELECT "BondID" FROM "Bond" WHERE isin = \'{isin[0]}\''
+    def __getBondId(self, isin: str):
+        getBondIdSqlStatement = (
+            f'SELECT "BondID" FROM "Bond" WHERE isin = \'{isin[0]}\''
+        )
         bondIdResult = self.__sqlConnection.execute(getBondIdSqlStatement)
         fetchedBondId = bondIdResult.fetchall()[0][0]
         return fetchedBondId
 
-    def __getTransaction(self, transactionId):
+    def __getTransaction(self, transactionId: int):
         getTransactionStatement = (
             f'SELECT * from transaction WHERE "transactionID" = {transactionId}'
         )
@@ -85,6 +83,48 @@ class AssociatePDFs:
         latestPDFIdResult = self.__sqlConnection.execute(getLatestPDFIdSqlStatement)
         fetchedLatestPDFId = latestPDFIdResult.fetchall()
         return fetchedLatestPDFId[0][0]
+
+    def associatePDFWithBond(self, isin: str):
+        filePath = f"/home/PDFs/{isin}/General"
+        if not os.path.exists(filePath):
+            os.makedirs(filePath)
+
+        transactionId = self.__getLatestTransactionIdForBond(isin)
+        bondId = self.__getBondId(isin)
+        self.__iterateOverFilesAndCreateBondPDFAssociations(
+            filePath, transactionId, bondId
+        )
+
+    def __iterateOverFilesAndCreateBondPDFAssociations(
+        self, filePath, transactionId, bondId
+    ):
+
+        newPath = f"{filePath}/GeneralInformation_{id}"
+        pdfType = "General"
+
+        self.__iterateOverFileAndInsertIntoDatabase(
+            date.today(), transactionId, bondId, newPath, pdfType
+        )
+
+    def __iterateOverFileAndInsertIntoDatabase(
+        self, date: date, transactionId, bondId, newPath, pdfType
+    ):
+        id = 1
+        for file in self.__onlyFiles:
+
+            os.rename(os.path.join(self.__fileDropPath, file), newPath)
+            pdfEntry = PDFEntry(date, pdfType, "", newPath)
+            pdfId = self.__insertPDFIntoDatabase(pdfEntry)
+            self.__insertAssociationIntoDatabase(transactionId, bondId, pdfId)
+            id = id + 1
+
+    def __getLatestTransactionIdForBond(self, isin: str):
+
+        getLatestTransactionIdSQLStatement = f"SELECT * FROM transaction WHERE isin LIKE '{isin}' ORDER BY \"transactionID\" DESC LIMIT 1"
+        latestTransactionIdResult = self.__sqlConnection.execute(
+            getLatestTransactionIdSQLStatement
+        )
+        return latestTransactionIdResult.fetchall()[0][0]
 
 
 import sqlalchemy
