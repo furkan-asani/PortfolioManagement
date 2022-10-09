@@ -99,7 +99,7 @@ class AssociatePDFs:
         self, filePath, transactionId, bondId
     ):
         # TODO the id isn't used correctly in this case → fix that
-        newPath = f"{filePath}/GeneralInformation_{id}"
+        newPath = f"{filePath}/GeneralInformation_"
         pdfType = "General"
 
         self.__iterateOverFileAndInsertIntoDatabase(
@@ -112,7 +112,7 @@ class AssociatePDFs:
         id = 1
         for file in self.__onlyFiles:
 
-            os.rename(os.path.join(self.__fileDropPath, file), newPath)
+            os.rename(os.path.join(self.__fileDropPath, file), f'{newPath}{id}.pdf')
             pdfEntry = PDFEntry(date, pdfType, "", newPath)
             pdfId = self.__insertPDFIntoDatabase(pdfEntry)
             self.__insertAssociationIntoDatabase(transactionId, bondId, pdfId)
