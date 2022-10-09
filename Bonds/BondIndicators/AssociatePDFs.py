@@ -58,7 +58,7 @@ class AssociatePDFs:
 
     def __getBondId(self, isin: str):
         getBondIdSqlStatement = (
-            f'SELECT "BondID" FROM "Bond" WHERE isin = \'{isin[0]}\''
+            f'SELECT "BondID" FROM "Bond" WHERE isin = \'{isin[0]}\' LIMIT 1'
         )
         bondIdResult = self.__sqlConnection.execute(getBondIdSqlStatement)
         fetchedBondId = bondIdResult.fetchall()[0][0]
@@ -85,12 +85,12 @@ class AssociatePDFs:
         return fetchedLatestPDFId[0][0]
 
     def associatePDFWithBond(self, isin: str):
-        filePath = f"/home/PDFs/{isin}/General"
+        filePath = f"/home/PortfolioManagement/PDFs/Bonds/{isin}/General"
         if not os.path.exists(filePath):
             os.makedirs(filePath)
 
         transactionId = self.__getLatestTransactionIdForBond(isin)
-        bondId = self.__getBondId(isin)
+        bondId = self.__getBondId([isin])
         self.__iterateOverFilesAndCreateBondPDFAssociations(
             filePath, transactionId, bondId
         )
@@ -98,7 +98,7 @@ class AssociatePDFs:
     def __iterateOverFilesAndCreateBondPDFAssociations(
         self, filePath, transactionId, bondId
     ):
-
+        # TODO the id isn't used correctly in this case → fix that
         newPath = f"{filePath}/GeneralInformation_{id}"
         pdfType = "General"
 
@@ -120,7 +120,7 @@ class AssociatePDFs:
 
     def __getLatestTransactionIdForBond(self, isin: str):
 
-        getLatestTransactionIdSQLStatement = f"SELECT * FROM transaction WHERE isin LIKE '{isin}' ORDER BY \"transactionID\" DESC LIMIT 1"
+        getLatestTransactionIdSQLStatement = f"SELECT \"transactionID\" FROM transaction WHERE isin LIKE '{isin}' ORDER BY \"transactionID\" DESC LIMIT 1"
         latestTransactionIdResult = self.__sqlConnection.execute(
             getLatestTransactionIdSQLStatement
         )
@@ -135,4 +135,4 @@ connection = engine.connect()
 
 example = AssociatePDFs(connection)
 
-example.associatePDFsWithTransaction(40)
+example.associatePDFWithBond('CH0012032048')
