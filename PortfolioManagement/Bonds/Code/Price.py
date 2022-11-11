@@ -18,8 +18,15 @@ class Price:
 
         self.__sqlConnection.execute(insertPriceSqlStatement)
 
-    def storePricesForActivePositions(self, fromDate: date, toDate: date):
+    def storePricesForActivePositions(self, fromDate: date=None, toDate: date=date.today()):
         """This function accepts a from and to date and retrieves the price for all active bond positions in your depot"""
+        
+        if(fromDate is None):
+            latestDateResult = self.__sqlConnection.execute('SELECT max("priceDate")+1 AS priceDate from "Price"')
+            fetchedLatestDate = latestDateResult.fetchall()
+            fromDate = fetchedLatestDate[0][0]
+
+
         for isin in self.__bondIndicators.getActiveIsins(fromDate):
             priceDataHistoryDataFrame = self.__priceService.getPriceHistory(isin, fromDate, toDate)
             
@@ -41,4 +48,5 @@ example = Price(connection, bondIndicators, priceService)
 
 #example.manuallyInsertPriceIntoDatabase('12345678', 10.4, date(year=2022, month=10, day=7))
 
-example.storePricesForActivePositions(date(year=2022, month=9, day=1), date(year=2022, month=10, day=1))
+#example.storePricesForActivePositions(date(year=2022, month=9, day=1), date(year=2022, month=10, day=1))
+example.storePricesForActivePositions()
