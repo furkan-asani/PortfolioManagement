@@ -165,6 +165,6 @@ example = PriceDataInvestiny(connection)
 #     == 7.6690001487732
 # )
 
-example.getBondInformation("IE0005042456")
+# example.getBondInformation("IE0005042456")
 
 # print(example.getPriceHistory("IE0005042456", date(year=2022, month=8, day=1), date(year=2022, month=10, day=5)))

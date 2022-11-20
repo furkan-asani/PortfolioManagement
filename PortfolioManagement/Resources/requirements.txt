@@ -2,3 +2,4 @@ pandas
 investiny
 sqlalchemy
 openpyxl
+yfinance
