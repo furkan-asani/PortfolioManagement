@@ -17,9 +17,10 @@ class PriceDataInvestiny:
         try:
             return self.__getPriceByIsinViaSearchAssets(isin, date)
         except:
-            return self.__getPriceByIsinViaInvestingIdCSV(isin, date)
-        finally:
-            return self.__getPriceFromDatabase(isin)
+            try:
+                return self.__getPriceByIsinViaInvestingIdCSV(isin, date)
+            except:
+                return self.__getPriceFromDatabase(isin)
 
     def getPriceHistory(self, isin: str, fromDate: date, toDate: date) -> pd.DataFrame:
         """This function accepts an isin a from and to date for which a pricehistory dataframe is returned"""
@@ -135,18 +136,22 @@ class PriceDataInvestiny:
 
     def __getInvestingIdBySearchAssetsApi(self, isin: str) -> int:
 
-        allowedExchanges = ["Frankfurt", "Xetra", "Vienna"]
-        returnedResults = search_assets(query=isin)
-        returnedResultsIterator = filter(
-            lambda result: result["exchange"] in allowedExchanges, returnedResults
-        )
-        returnedResults = list(returnedResultsIterator)
+        returnedResults = self.getBondInformation(isin)
         investingId = (
             returnedResults[0]["ticker"]
             if returnedResults[0]["ticker"] != None
             else Exception()
         )
         return investingId
+
+    def getBondInformation(self, isin):
+        allowedExchanges = ["Frankfurt", "Xetra", "Vienna"]
+        returnedResults = search_assets(query=isin)
+        returnedResultsIterator = filter(
+            lambda result: result["exchange"] in allowedExchanges, returnedResults
+        )
+        returnedResults = list(returnedResultsIterator)
+        return returnedResults
 
 
 connectionString = "postgresql+psycopg2://root:password@postgres_db:5432/portfolio"
@@ -155,6 +160,11 @@ connection = engine.connect()
 
 example = PriceDataInvestiny(connection)
 
-# example.getPriceByIsinViaSearchAssets("IE0005042456")
+# assert (
+#     example.getPriceByIsin("IE0005042456", date(year=2022, month=11, day=19))
+#     == 7.6690001487732
+# )
+
+example.getBondInformation("IE0005042456")
 
 # print(example.getPriceHistory("IE0005042456", date(year=2022, month=8, day=1), date(year=2022, month=10, day=5)))
