@@ -5,6 +5,7 @@ __pycache__/
 
 /home/PortfolioManagement/PDFs/*.*
 /home/PortfolioManagement/Import/*.*
+/home/PortfolioManagement/Resources/env.py
 # C extensions
 *.so
 
