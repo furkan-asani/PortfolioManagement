@@ -7,4 +7,6 @@ class PriceDataInterface(ABC):
     @abstractmethod
     def getPriceByIsin(isin: str, date: datetime): raise NotImplementedError
 
+    
+
         
