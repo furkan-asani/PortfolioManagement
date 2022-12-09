@@ -1,41 +1,26 @@
-version: '3.8'
-
+version: "3"
 services:
-  app:
-    build:
-      context: ..
-      dockerfile: .devcontainer/Dockerfile
-      args:
-        # Optional Node.js version to install
-        NODE_VERSION: "lts/*"
-    env_file:
-        - .env
-
+  postgres_db:
+    image: postgres:11.1
+    environment: # Set up postgres database name and password
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: portfolio
+      POSTGRES_USER: root
+    ports: # Set up ports exposed for other containers to connect to
+      - 5433:5432
+    networks:
+      - app-tier
     volumes:
-      - ..:/workspace:cached  
+      - ./postgres:/docker-entrypoint-initdb.d
 
-    # Overrides default command so things don't shut down after the process ends.
-    command: sleep infinity
+  python_app:
+    image: amancevice/pandas
+    depends_on:
+      - postgres_db
+    networks:
+      - app-tier
+    command: tail -f /dev/null
 
-    # Runs app on the same network as the database container, allows "forwardPorts" in devcontainer.json function.
-    network_mode: service:db
-
-    # Uncomment the next line to use a non-root user for all processes.
-    # user: vscode
-
-    # Use "forwardPorts" in **devcontainer.json** to forward an app port locally.
-    # (Adding the "ports" property to this file will not forward from a Codespace.)
-
-  db:
-    image: postgres:latest
-    restart: unless-stopped
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    env_file:
-        - .env
-
-    # Add "forwardPorts": ["5432"] to **devcontainer.json** to forward PostgreSQL locally.
-    # (Adding the "ports" property to this file will not forward from a Codespace.)
-
-volumes:
-  postgres-data:
+networks:
+  app-tier:
+    driver: bridge
