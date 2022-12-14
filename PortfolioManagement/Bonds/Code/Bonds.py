@@ -24,10 +24,11 @@ class Bonds:
         return mappedNewBonds
 
     def getNameByIsin(self):
+        # TODO Method is not done
         for isin in self.mappedNewBonds:
             bondInformation = self.priceService.getBondInformation(isin)
             name = bondInformation[0]["name"]
-        pass
+            return name
 
     def storeSymbolForBond(self, isin: str):
         symbol = self.__isinToSymbolConverter.getTickerForISIN(isin)

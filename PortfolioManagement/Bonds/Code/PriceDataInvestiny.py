@@ -154,11 +154,11 @@ class PriceDataInvestiny:
         return returnedResults
 
 
-connectionString = "postgresql+psycopg2://root:password@postgres_db:5432/portfolio"
-engine = sqlalchemy.create_engine(connectionString)
-connection = engine.connect()
+# connectionString = "postgresql+psycopg2://root:password@postgres_db:5432/portfolio"
+# engine = sqlalchemy.create_engine(connectionString)
+# connection = engine.connect()
 
-example = PriceDataInvestiny(connection)
+#example = PriceDataInvestiny(connection)
 
 # assert (
 #     example.getPriceByIsin("IE0005042456", date(year=2022, month=11, day=19))
