@@ -62,7 +62,17 @@ class ISINToTickerConverter:
         except:
             return set()
 
+    def getNameForIsin(self, isin: str) -> str:
+        """This function accepts an isin and returns the name of the corresponding bond"""
+        jobs = [
+            {"idType": "ID_ISIN", "idValue": f"{isin}"},
+        ]
+        response = self.__map_jobs(jobs)
+        name = response[0]["data"][0]["name"]
+
+        return name
+
 
 isinConverter = ISINToTickerConverter()
 # print(isinConverter.getTickerForISIN("IE00B0M63623"))
-isinConverter.getAllTickerForISIN("IE00B0M63623")
+isinConverter.getNameForIsin("IE00B0M63623")

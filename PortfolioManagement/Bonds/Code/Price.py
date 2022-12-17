@@ -18,7 +18,7 @@ class Price:
 
         self.__sqlConnection.execute(insertPriceSqlStatement)
 
-    def storePricesForActivePositions(self, fromDate: date=None, toDate: date=date.today()):
+    def __storePricesForActivePositions(self, fromDate: date=None, toDate: date=date.today()):
         """This function accepts a from and to date and retrieves the price for all active bond positions in your depot. If called with no arguments
         then it will fetch all prices since the last update."""
         
