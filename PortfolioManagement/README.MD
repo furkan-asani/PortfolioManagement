@@ -3,3 +3,4 @@
     - Create a filedrop folder at /home/PortfolioManagement/FileDrop
     - Run the migration on the SQL Database
     - Adjust the names of your exported depot csv and excel files in the ImportScripts.py Constructors for every depot
+    - Add the respective tickers, symbols into the bonds table in the database
