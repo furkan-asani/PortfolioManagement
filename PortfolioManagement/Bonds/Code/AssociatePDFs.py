@@ -29,7 +29,7 @@ class AssociatePDFs:
         An additional comment.
         This function creates a link between a transaction and the pdfs which are currently in the FileDrop Folder.
         The files in the filedrop folder are moved and renamed to the PDFs folder into the respective Transaction folders
-        An entry is written to the database which links the transaction to the pdf """
+        An entry is written to the database which links the transaction to the pdf"""
 
         # TODO Falls es keine BondId rufe eine Funktion auf, welche die BondIds extrahiert und in die DB einpflegt
         fetchedTransactionResult = self.__getTransaction(transactionId)
@@ -45,7 +45,13 @@ class AssociatePDFs:
         )
 
     def __iterateOverFileDropAndCreateAssociations(
-        self, transactionId, typeOfPDFs, date, fetchedBondId, destinationPath, comment:str = ""
+        self,
+        transactionId,
+        typeOfPDFs,
+        date,
+        fetchedBondId,
+        destinationPath,
+        comment: str = "",
     ):
         newPath = f"{destinationPath}/TransactionPDF_"
 
@@ -91,7 +97,9 @@ class AssociatePDFs:
         fetchedLatestPDFId = latestPDFIdResult.fetchall()
         return fetchedLatestPDFId[0][0]
 
-    def associatePDFWithBond(self, isin: str, typeOfPDFs: str = "Transaction", comment: str = ""):
+    def associatePDFWithBond(
+        self, isin: str, typeOfPDFs: str = "Transaction", comment: str = ""
+    ):
         """This function accepts a isin (can be retrieved by database).
         This function creates a link/association between a bond and the pdfs which are currently in the FileDrop Folder.
         The files in the filedrop folder are moved and renamed to the PDFs folder into the respective bond folders and an entry is written to the database which links the pdf to a bond"""
@@ -111,19 +119,18 @@ class AssociatePDFs:
     ):
         # TODO the id isn't used correctly in this case → fix that
         newPath = f"{filePath}/GeneralInformation_"
-    
 
         self.__iterateOverFileAndInsertIntoDatabase(
             date.today(), transactionId, bondId, newPath, pdfType
         )
 
     def __iterateOverFileAndInsertIntoDatabase(
-        self, date: date, transactionId, bondId, newPath, pdfType, comment: str=""
+        self, date: date, transactionId, bondId, newPath, pdfType, comment: str = ""
     ):
         id = 1
         for file in self.__onlyFiles:
 
-            os.rename(os.path.join(self.__fileDropPath, file), f'{newPath}{id}.pdf')
+            os.rename(os.path.join(self.__fileDropPath, file), f"{newPath}{id}.pdf")
             pdfEntry = PDFEntry(date, pdfType, comment, newPath)
             pdfId = self.__insertPDFIntoDatabase(pdfEntry)
             self.__insertAssociationIntoDatabase(transactionId, bondId, pdfId)
@@ -131,19 +138,19 @@ class AssociatePDFs:
 
     def __getLatestTransactionIdForBond(self, isin: str):
 
-        getLatestTransactionIdSQLStatement = f"SELECT \"transactionID\" FROM transaction WHERE isin LIKE '{isin}' ORDER BY \"transactionID\" DESC LIMIT 1"
+        getLatestTransactionIdSQLStatement = f'SELECT "transactionID" FROM transaction WHERE isin LIKE \'{isin}\' ORDER BY "transactionID" DESC LIMIT 1'
         latestTransactionIdResult = self.__sqlConnection.execute(
             getLatestTransactionIdSQLStatement
         )
         return latestTransactionIdResult.fetchall()[0][0]
 
 
-import sqlalchemy
+# import sqlalchemy
 
-connectionString = "postgresql+psycopg2://root:password@postgres_db:5432/portfolio"
-engine = sqlalchemy.create_engine(connectionString)
-connection = engine.connect()
+# connectionString = "postgresql+psycopg2://root:password@postgres_db:5432/portfolio"
+# engine = sqlalchemy.create_engine(connectionString)
+# connection = engine.connect()
 
-example = AssociatePDFs(connection)
+# example = AssociatePDFs(connection)
 
-example.associatePDFWithBond('CH0012032048')
+# example.associatePDFWithBond('CH0012032048')

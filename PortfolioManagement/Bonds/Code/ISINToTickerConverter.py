@@ -68,11 +68,14 @@ class ISINToTickerConverter:
             {"idType": "ID_ISIN", "idValue": f"{isin}"},
         ]
         response = self.__map_jobs(jobs)
-        name = response[0]["data"][0]["name"]
+        try:
+            name = response[0]["data"][0]["name"]
+        except:
+            name = ""
 
         return name
 
 
-isinConverter = ISINToTickerConverter()
+# isinConverter = ISINToTickerConverter()
 # print(isinConverter.getTickerForISIN("IE00B0M63623"))
-isinConverter.getNameForIsin("IE00B0M63623")
+# isinConverter.getNameForIsin("IE00B0M63623")

@@ -1,6 +1,4 @@
-from datetime import date
 import datetime
-from timeit import Timer
 import yfinance as yf
 
 
@@ -9,28 +7,30 @@ class PriceDataYahoo:
         self.__isinConverter = isinConverter
         self.__sqlConnection = sqlConnection
 
-    def getPriceByIsin(self, isin: str):
+    def getPriceByIsin(self, isin: str) -> float:
         try:
             ticker = self.__getSymbolFromDb(isin)
         except:
             ticker = self.__isinConverter.getTickerForISIN(isin)
 
         if ticker == "n/a":
-            print("ticker cannot be found")
-            return self.getPriceByIsinTryAllTicker(isin)
+
+            return 0
 
         yfTicker = yf.Ticker(ticker)
+
         try:
-            yfTicker.info.get("regularMarketPrice")
+            price = yfTicker.info.get("regularMarketPrice")
         except:
-            return self.getPriceByIsinTryAllTicker(isin)
-        return (
-            yfTicker.info["regularMarketPrice"]
-            if yfTicker.info.get("regularMarketPrice") is not None
-            else yfTicker.history(period="1d", interval="1d")["Open"]
-            if len(yfTicker.history(period="1d", interval="1d")["Open"]) > 0
-            else self.getPriceByIsinTryAllTicker(isin)
-        )
+            price = None
+
+        if price is None:
+            try:
+                price = yfTicker.history(period="1d", interval="1d")["Open"][0]
+            except:
+                price = 0
+
+        return price
 
     def getPriceByIsinTryAllTicker(self, isin: str):
         tickers = self.__isinConverter.getAllTickerForISIN(isin)

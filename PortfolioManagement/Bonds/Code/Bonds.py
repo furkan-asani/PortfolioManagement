@@ -26,7 +26,7 @@ class Bonds:
     def getNameByIsin(self):
         for isin in self.mappedNewBonds:
             name = self.__isinToSymbolConverter.getNameForIsin(isin)
-            
+
             return name
 
     def storeSymbolForBond(self, isin: str):
@@ -37,10 +37,10 @@ class Bonds:
             )
 
 
-connectionString = "postgresql+psycopg2://root:password@postgres_db:5432/portfolio"
-engine = sqlalchemy.create_engine(connectionString)
-connection = engine.connect()
-priceService = PriceDataInvestiny(connection)
+# connectionString = "postgresql+psycopg2://root:password@postgres_db:5432/portfolio"
+# engine = sqlalchemy.create_engine(connectionString)
+# connection = engine.connect()
+# priceService = PriceDataInvestiny(connection)
 # bonds = Bonds(connection, priceService)
 
 # bonds.getNameByIsin()

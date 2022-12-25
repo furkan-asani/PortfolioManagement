@@ -1,5 +1,6 @@
 from datetime import date
 
+
 class Transaction:
     def __init__(
         self,
@@ -25,14 +26,15 @@ class Transaction:
         self.currency = currency
         self.exchange = exchange
 
+
 class TransactionHelper:
     def __init__(self, sqlConnection):
         self.__sqlConnection = sqlConnection
-        
+
     def insertIntoDatabase(self, transaction: Transaction):
         """This function accepts a transaction as a data parameter class and inserts the transaction into the database.
         It returns the new transaction id"""
-        insertSqlStatement =f"""
+        insertSqlStatement = f"""
             INSERT INTO transaction (isin, wkn, amountofbonds, transactiondate, typeoftransaction, transactioncomment, price, depot, currency, exchange)
             VALUES ('{transaction.isin}', '{transaction.wkn}', {transaction.amountofbonds}, '{transaction.transactiondate}', '{transaction.typeoftransaction}', '{transaction.transactioncomment}', {transaction.price}, '{transaction.depot}', '{transaction.currency}', '{transaction.exchange}')
         """
@@ -40,21 +42,22 @@ class TransactionHelper:
 
         getLatestTransactionIdSqlStatement = 'SELECT "transactionID" from transaction ORDER BY transactiondate DESC LIMIT 1'
 
-        latestTransactionIdResult = self.__sqlConnection.execute(getLatestTransactionIdSqlStatement)
+        latestTransactionIdResult = self.__sqlConnection.execute(
+            getLatestTransactionIdSqlStatement
+        )
 
         fetchedLatestTransactionId = latestTransactionIdResult.fetchall()
 
         return fetchedLatestTransactionId[0][0]
 
 
+# import sqlalchemy
+# connectionString = "postgresql+psycopg2://root:password@postgres_db:5432/portfolio"
+# engine = sqlalchemy.create_engine(connectionString)
+# connection = engine.connect()
 
-import sqlalchemy
-connectionString = "postgresql+psycopg2://root:password@postgres_db:5432/portfolio"
-engine = sqlalchemy.create_engine(connectionString)
-connection = engine.connect()
+# example = TransactionHelper(connection)
 
-example = TransactionHelper(connection)
+# transaction = Transaction('12345678','12345678', 1, date(year=2022, month=10, day=8), 'sell', 'Sample', 35.58, 'DKB', 'EUR', 'Xetra')
 
-transaction = Transaction('12345678','12345678', 1, date(year=2022, month=10, day=8), 'sell', 'Sample', 35.58, 'DKB', 'EUR', 'Xetra')
-
-example.insertIntoDatabase(transaction=transaction)
+# example.insertIntoDatabase(transaction=transaction)
