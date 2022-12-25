@@ -31,6 +31,8 @@ class AssociatePDFs:
         The files in the filedrop folder are moved and renamed to the PDFs folder into the respective Transaction folders
         An entry is written to the database which links the transaction to the pdf"""
 
+        self.__getFilesFromFileDrop()
+
         # TODO Falls es keine BondId rufe eine Funktion auf, welche die BondIds extrahiert und in die DB einpflegt
         fetchedTransactionResult = self.__getTransaction(transactionId)
         date = fetchedTransactionResult[3]
@@ -43,6 +45,13 @@ class AssociatePDFs:
         self.__iterateOverFileDropAndCreateAssociations(
             transactionId, typeOfPDFs, date, fetchedBondId, destinationPath, comment
         )
+
+    def __getFilesFromFileDrop(self):
+        self.__onlyFiles = [
+            f
+            for f in os.listdir(self.__fileDropPath)
+            if os.path.isfile(os.path.join(self.__fileDropPath, f))
+        ]
 
     def __iterateOverFileDropAndCreateAssociations(
         self,
@@ -103,6 +112,8 @@ class AssociatePDFs:
         """This function accepts a isin (can be retrieved by database).
         This function creates a link/association between a bond and the pdfs which are currently in the FileDrop Folder.
         The files in the filedrop folder are moved and renamed to the PDFs folder into the respective bond folders and an entry is written to the database which links the pdf to a bond"""
+
+        self.__getFilesFromFileDrop()
 
         filePath = f"/home/PortfolioManagement/PDFs/Bonds/{isin}/General"
         if not os.path.exists(filePath):
