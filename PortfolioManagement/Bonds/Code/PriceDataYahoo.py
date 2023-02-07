@@ -67,7 +67,10 @@ class PriceDataYahoo:
         raise Exception
 
     def getPriceHistory(self, isin: str, fromDate: datetime, toDate: datetime):
-        ticker = self.__isinConverter.getTickerForISIN(isin)
+        try:
+            ticker = self.__getSymbolFromDb(isin)
+        except:
+            ticker = self.__isinConverter.getTickerForISIN(isin)
         yfTicker = yf.Ticker(ticker)
         history = yfTicker.history(start=fromDate, end=toDate)
         return history[["Open", "Close"]]

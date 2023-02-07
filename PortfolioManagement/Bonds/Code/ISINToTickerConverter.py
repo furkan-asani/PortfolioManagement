@@ -46,7 +46,6 @@ class ISINToTickerConverter:
         try:
             ticker = response[0]["data"][0]["ticker"]
         except:
-            print(response)
             print("no ticker could be found for " + isin)
             ticker = "n/a"
         return ticker
