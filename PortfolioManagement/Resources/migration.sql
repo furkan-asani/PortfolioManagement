@@ -1,2 +1,5 @@
 ALTER TABLE "Bond"
 ADD SYMBOL VARCHAR(15);
+
+ALTER TABLE "Price"
+    ADD currency VARCHAR;
