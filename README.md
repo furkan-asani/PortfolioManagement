@@ -3,17 +3,13 @@
 1. Klone dieses Repository in ein Verzeichnis mit dem folgenden Befehl:
     
     ```
-    bashCopy code
     git clone https://github.com/furkan-asani/PortfolioManagement.git
-    
     ```
     
 2. Im Verzeichnis "Resources" befindet sich die Docker Compose Datei. Führe diesen Befehl aus, um die Docker Container beim ersten Mal zum Laufen zu bringen.
     
     ```
-    Copy code
     docker-compose up -d
-    
     ```
     
     Hinweis: Später reicht es, die Container über Docker Desktop zu starten.
@@ -22,17 +18,13 @@
     - Innerhalb des Containers:
         
         ```
-        bashCopy code
         postgresql+psycopg2://root:password@postgres_db:5432/portfolio
-        
         ```
         
     - Auf der lokalen Maschine:
         
         ```
-        bashCopy code
         postgresql+psycopg2://root:password@postgres_db:5433/portfolio
-        
         ```
         
 4. Die Datenbank ist derzeit noch leer und besitzt kein Datenschema. Um die Tabellendefinition und alles weitere zu erstellen, kopiere den Inhalt der "CreateTablesStatement.sql" Datei, die ebenfalls im Verzeichnis "Resources" liegt, und führe ihn über den installierten DB-Client auf der Datenbank aus.
@@ -40,9 +32,7 @@
 6. Installiere die Abhängigkeiten für die Python-Anwendung. Verbinde dich dazu über VS Code mit dem gestarteten Python-Container. Klicke auf den grünen Button mit dem "><" Zeichen und wähle "Attach to running container" aus. Wähle den Python-Container aus, um ein neues VS Code Fenster zu öffnen, das mit dem Container verbunden ist. Clone das Repository in den Container mit dem Befehl aus Schritt 1. Führe anschließend im Verzeichnis "Resources" den folgenden Befehl aus:
     
     ```
-    bashCopy code
     pip install -r ./requirements.txt
-    
     ```
     
 7. Importiere deine Wertpapiere über die Importskripte, die sich in der "ImportScripts.py" im Verzeichnis "PortfolioManagement/Bonds/Code" befinden. Lege deine zu importierenden Dateien im Import-Verzeichnis ab. In der "ImportScripts.py" gibt es drei Klassen für jeden deiner Depotanbieter. Führe die Datei deswegen dreimal aus und ändere die Klasse in der "example" Variable, um den jeweiligen Anbieter zu importieren.
